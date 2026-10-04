@@ -6,9 +6,14 @@ import { AppError } from './errorHandler.js';
  * If API_SECRET_KEY is configured in .env, requires 'x-api-key' header.
  */
 export function apiKeyAuth(req: Request, res: Response, next: NextFunction): void {
-  const secretKey = process.env.API_SECRET_KEY;
+  // Always allow health checks through
+  if (req.path === '/health' || req.path === '/api/health') {
+    return next();
+  }
+
+  const secretKey = process.env.API_SECRET_KEY?.trim();
   if (!secretKey) {
-    // If not set, pass through in development
+    // If not set or empty, pass through
     return next();
   }
 

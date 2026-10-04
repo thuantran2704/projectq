@@ -10,9 +10,13 @@ import { isGcpConfigured } from './config/gcpStorage.js';
 import { isMailerConfigured } from './config/mailer.js';
 
 // Load environment variables from backend/.env or root .env
-dotenv.config();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config();
+dotenv.config({ path: path.resolve(process.cwd(), 'backend/.env') });
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../backend/.env') });
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;

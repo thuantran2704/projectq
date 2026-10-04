@@ -1,6 +1,7 @@
 import { Storage } from '@google-cloud/storage';
 import path from 'node:path';
 import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 export interface ResumeMetadata {
   name: string;
@@ -12,9 +13,32 @@ export interface ResumeMetadata {
   isLocalFallback?: boolean;
 }
 
-const projectId = process.env.GCP_PROJECT_ID;
-const bucketName = process.env.GCP_BUCKET_NAME;
-const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+function getProjectId(): string | undefined {
+  return process.env.GCP_PROJECT_ID;
+}
+
+function getBucketName(): string | undefined {
+  return process.env.GCP_BUCKET_NAME;
+}
+
+function getResolvedKeyPath(): string | null {
+  const configured = process.env.GOOGLE_APPLICATION_CREDENTIALS || './service-account-key.json';
+  const candidates = [
+    path.resolve(process.cwd(), configured),
+    path.resolve(process.cwd(), 'backend', configured),
+    path.resolve(process.cwd(), 'service-account-key.json'),
+    path.resolve(process.cwd(), 'backend', 'service-account-key.json'),
+    path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../service-account-key.json'),
+    path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../service-account-key.json')
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  return null;
+}
 
 // Local fallback storage directory when GCP credentials are not yet supplied
 const LOCAL_STORAGE_DIR = path.resolve(process.cwd(), 'local_storage', 'resumes');
@@ -24,10 +48,9 @@ if (!fs.existsSync(LOCAL_STORAGE_DIR)) {
 
 export function isGcpConfigured(): boolean {
   return Boolean(
-    projectId &&
-    bucketName &&
-    keyFilename &&
-    fs.existsSync(keyFilename)
+    getProjectId() &&
+    getBucketName() &&
+    getResolvedKeyPath() !== null
   );
 }
 
@@ -35,9 +58,10 @@ let storageClient: Storage | null = null;
 
 function getStorageClient(): Storage {
   if (!storageClient) {
+    const keyFilename = getResolvedKeyPath();
     storageClient = new Storage({
-      projectId,
-      keyFilename
+      projectId: getProjectId(),
+      keyFilename: keyFilename || undefined
     });
   }
   return storageClient;
@@ -47,6 +71,7 @@ export async function uploadResumeFile(file: Express.Multer.File): Promise<Resum
   const timestamp = Date.now();
   const safeOriginalName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
   const destinationName = `${timestamp}-${safeOriginalName}`;
+  const bucketName = getBucketName();
 
   if (isGcpConfigured() && bucketName) {
     const bucket = getStorageClient().bucket(bucketName);
@@ -99,6 +124,7 @@ export async function uploadResumeFile(file: Express.Multer.File): Promise<Resum
 }
 
 export async function listResumes(): Promise<ResumeMetadata[]> {
+  const bucketName = getBucketName();
   if (isGcpConfigured() && bucketName) {
     const bucket = getStorageClient().bucket(bucketName);
     const [files] = await bucket.getFiles({ prefix: 'resumes/' });
@@ -181,6 +207,7 @@ export async function listResumes(): Promise<ResumeMetadata[]> {
 
 export async function deleteResume(filename: string): Promise<void> {
   const cleanName = path.basename(filename);
+  const bucketName = getBucketName();
 
   if (isGcpConfigured() && bucketName) {
     const bucket = getStorageClient().bucket(bucketName);
@@ -203,6 +230,7 @@ export async function deleteResume(filename: string): Promise<void> {
 
 export async function getResumeBuffer(filename: string): Promise<{ buffer: Buffer; originalName: string; contentType: string }> {
   const cleanName = path.basename(filename);
+  const bucketName = getBucketName();
 
   if (isGcpConfigured() && bucketName) {
     const bucket = getStorageClient().bucket(bucketName);
