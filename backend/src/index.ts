@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'node:path';
+import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { requestLogger, errorHandler, apiKeyAuth } from '@projectq/middleware';
 import resumeRoutes from './routes/resumeRoutes.js';
@@ -49,6 +50,32 @@ app.get('/api/health', (req, res) => {
 // Mount modular routes
 app.use('/api/resumes', resumeRoutes);
 app.use('/api/email', emailRoutes);
+
+// Serve frontend static build in production (single web-service deployment)
+const frontendDistCandidates = [
+  path.resolve(process.cwd(), 'frontend', 'dist'),
+  path.resolve(process.cwd(), 'dist'),
+  path.resolve(__dirname, '../../frontend/dist'),
+  path.resolve(__dirname, '../../../frontend/dist')
+];
+
+let frontendDistPath: string | null = null;
+for (const cand of frontendDistCandidates) {
+  if (fs.existsSync(cand)) {
+    frontendDistPath = cand;
+    break;
+  }
+}
+
+if (frontendDistPath) {
+  app.use(express.static(frontendDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendDistPath!, 'index.html'));
+  });
+}
 
 // Centralized error handling middleware
 app.use(errorHandler);

@@ -9,6 +9,7 @@
     "frontend"
   ],
   "scripts": {
+    "start": "node backend/dist/index.js",
     "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"blue,green\" \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
     "build": "npm run build --workspace=middleware && npm run build --workspace=backend && npm run build --workspace=frontend",
     "dev:backend": "npm run dev --workspace=backend",

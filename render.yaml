@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: projectq-hospital-dispatcher
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: GCP_PROJECT_ID
+        value: delta-cortex-477905-s3
+      - key: GCP_BUCKET_NAME
+        value: resumechobequynh
+      - key: GCP_SERVICE_ACCOUNT_KEY
+        sync: false
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 465
+      - key: SMTP_SECURE
+        value: "true"
+      - key: SMTP_USER
+        value: nguyenquynh11102005@gmail.com
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM_NAME
+        value: Quynh Nguyen
+      - key: SMTP_FROM_EMAIL
+        value: nguyenquynh11102005@gmail.com

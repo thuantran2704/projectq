@@ -21,6 +21,17 @@ function getBucketName(): string | undefined {
   return process.env.GCP_BUCKET_NAME;
 }
 
+function getInlineCredentials(): Record<string, unknown> | null {
+  const raw = process.env.GCP_SERVICE_ACCOUNT_KEY;
+  if (!raw?.trim()) return null;
+  try {
+    return JSON.parse(raw.trim()) as Record<string, unknown>;
+  } catch (err) {
+    console.error('Failed to parse GCP_SERVICE_ACCOUNT_KEY JSON string:', err);
+    return null;
+  }
+}
+
 function getResolvedKeyPath(): string | null {
   const configured = process.env.GOOGLE_APPLICATION_CREDENTIALS || './service-account-key.json';
   const candidates = [
@@ -50,7 +61,7 @@ export function isGcpConfigured(): boolean {
   return Boolean(
     getProjectId() &&
     getBucketName() &&
-    getResolvedKeyPath() !== null
+    (getInlineCredentials() !== null || getResolvedKeyPath() !== null)
   );
 }
 
@@ -58,11 +69,19 @@ let storageClient: Storage | null = null;
 
 function getStorageClient(): Storage {
   if (!storageClient) {
-    const keyFilename = getResolvedKeyPath();
-    storageClient = new Storage({
-      projectId: getProjectId(),
-      keyFilename: keyFilename || undefined
-    });
+    const inlineCreds = getInlineCredentials();
+    if (inlineCreds) {
+      storageClient = new Storage({
+        projectId: getProjectId(),
+        credentials: inlineCreds
+      });
+    } else {
+      const keyFilename = getResolvedKeyPath();
+      storageClient = new Storage({
+        projectId: getProjectId(),
+        keyFilename: keyFilename || undefined
+      });
+    }
   }
   return storageClient;
 }
