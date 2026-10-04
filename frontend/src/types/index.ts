@@ -15,6 +15,16 @@ export interface HospitalEmailTemplate {
   subject: string;
   body: string;
   description: string;
+  defaultApplicant?: {
+    name: string;
+    school: string;
+    program: string;
+    nclexDate: string;
+    phone: string;
+    email: string;
+    linkedin: string;
+    experienceUnits: string;
+  };
 }
 
 export interface SendEmailPayload {
