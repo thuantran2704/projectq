@@ -458,7 +458,7 @@ export const BatchEmailWorkspace: React.FC<BatchEmailWorkspaceProps> = ({
         <div className="flex flex-wrap items-center justify-end gap-2 text-xs text-slate-500"><span className="rounded-full bg-slate-100 px-3 py-1.5 font-medium text-slate-700">{newCount} new</span><span className="rounded-full bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">{sentProfileCount} sent</span></div>
       </div>
 
-      <section className="rounded-xl border border-rose-200 bg-rose-50/70 p-5 shadow-sm">
+      <section className="love-note rounded-xl border border-rose-300 bg-rose-100 p-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-rose-600">Personal note</p><h3 className="mt-1 text-base font-semibold text-slate-900">Send a little love to Thuan</h3><p className="mt-1 text-xs text-slate-600">This is separate from hospital outreach. Edit it before sending if you want.</p></div><span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-rose-600">To: thuantran2704@gmail.com</span></div>
         <div className="mt-4 grid gap-3 md:grid-cols-[1fr_2fr_auto] md:items-end"><label className="block text-xs font-medium text-slate-700">Subject<input value={loveSubject} onChange={(event) => setLoveSubject(event.target.value)} disabled={isSendingLove} className="mt-1 w-full rounded-lg border border-rose-200 bg-white px-3 py-2 text-sm text-slate-800" /></label><label className="block text-xs font-medium text-slate-700">Message<textarea rows={2} value={loveBody} onChange={(event) => setLoveBody(event.target.value)} disabled={isSendingLove} className="mt-1 w-full resize-y rounded-lg border border-rose-200 bg-white px-3 py-2 text-sm text-slate-800" /></label><button type="button" onClick={() => void sendLove()} disabled={isSendingLove || !loveSubject.trim() || !loveBody.trim()} className="inline-flex items-center justify-center gap-2 rounded-lg bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-rose-600 disabled:opacity-50">{isSendingLove ? <Loader2 className="h-4 w-4 animate-spin" /> : '❤️'} Send love</button></div>
         {loveStatus && <p className="mt-3 text-xs text-rose-700">{loveStatus}</p>}
@@ -783,16 +783,16 @@ export const BatchEmailWorkspace: React.FC<BatchEmailWorkspaceProps> = ({
               />
             </div>
           ) : (
-            <div role="tabpanel" className="overflow-hidden rounded-md border border-slate-300 bg-slate-50" aria-busy={isPreviewLoading}>
-              <div className="space-y-2 border-b border-slate-300 bg-slate-200 px-4 py-3 text-xs">
-                <div className="flex gap-3"><span className="w-14 shrink-0 font-semibold text-slate-600">To</span><span className="break-all text-slate-900">{activeProfile.recipientEmail || 'Add a recipient email'}</span></div>
-                <div className="flex gap-3"><span className="w-14 shrink-0 font-semibold text-slate-600">Subject</span><span className="break-words text-slate-900">{currentSubject}</span></div>
-                <div className="flex gap-3"><span className="w-14 shrink-0 font-semibold text-slate-600">Attach</span><span className="break-all text-slate-900">{selectedResume && attachResume ? selectedResume.originalName : 'No resume attached'}</span></div>
+            <div role="tabpanel" className="overflow-hidden rounded-md border border-[#e5e7eb] bg-[#f8f7f4]" aria-busy={isPreviewLoading}>
+              <div className="space-y-2 border-b border-[#e3e8f2] bg-[#f5f7fb] px-4 py-3 text-xs">
+                <div className="flex gap-3"><span className="w-14 shrink-0 font-semibold text-indigo-600">To</span><span className="break-all text-slate-800">{activeProfile.recipientEmail || 'Add a recipient email'}</span></div>
+                <div className="flex gap-3"><span className="w-14 shrink-0 font-semibold text-indigo-600">Subject</span><span className="break-words text-slate-800">{currentSubject}</span></div>
+                <div className="flex gap-3"><span className="w-14 shrink-0 font-semibold text-indigo-600">Attach</span><span className="break-all text-slate-800">{selectedResume && attachResume ? selectedResume.originalName : 'No resume attached'}</span></div>
               </div>
               {previewError ? (
                 <div role="status" className="p-4 text-sm text-red-700">Live view unavailable: {previewError}</div>
               ) : previewHtml ? (
-                <div className="bg-slate-100 p-4 sm:p-6">
+                <div className="bg-[#f8f7f4] p-4 sm:p-6">
                   <iframe
                     title="Live sent-email view"
                     srcDoc={previewHtml}
@@ -805,7 +805,7 @@ export const BatchEmailWorkspace: React.FC<BatchEmailWorkspaceProps> = ({
                         frame.style.height = `${height + 24}px`;
                       }
                     }}
-                    className="block min-h-[820px] w-full rounded-md border border-slate-300 bg-white shadow-sm"
+                    className="block min-h-[820px] w-full rounded-md border border-[#e5e7eb] bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)]"
                   />
                 </div>
               ) : (

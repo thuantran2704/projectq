@@ -62,3 +62,11 @@ a:focus-visible {
   border: 2px solid #0d1117;
   border-radius: 8px;
 }
+
+.love-note button {
+  background: #fb7185;
+}
+
+.love-note button:hover:not(:disabled) {
+  background: #f43f5e;
+}
