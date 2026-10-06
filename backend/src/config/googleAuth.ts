@@ -4,7 +4,7 @@ const GOOGLE_TOKEN = 'https://oauth2.googleapis.com/token';
 export function googleConfigured() { return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET); }
 export function googleRedirectUri() { return process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5000/api/auth/google/callback'; }
 export function googleAuthorizationUrl() {
-  const params = new URLSearchParams({ client_id: process.env.GOOGLE_CLIENT_ID!, redirect_uri: googleRedirectUri(), response_type: 'code', access_type: 'offline', prompt: 'consent', scope: 'https://www.googleapis.com/auth/gmail.send' });
+  const params = new URLSearchParams({ client_id: process.env.GOOGLE_CLIENT_ID!, redirect_uri: googleRedirectUri(), response_type: 'code', access_type: 'offline', prompt: 'consent', scope: 'openid email https://www.googleapis.com/auth/gmail.send' });
   return `${GOOGLE_AUTH}?${params}`;
 }
 export async function exchangeGoogleCode(code: string) {
