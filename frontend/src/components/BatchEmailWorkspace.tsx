@@ -792,20 +792,22 @@ export const BatchEmailWorkspace: React.FC<BatchEmailWorkspaceProps> = ({
               {previewError ? (
                 <div role="status" className="p-4 text-sm text-red-700">Live view unavailable: {previewError}</div>
               ) : previewHtml ? (
-                <iframe
-                  title="Live sent-email view"
-                  srcDoc={previewHtml}
-                  sandbox="allow-same-origin"
-                  onLoad={(event) => {
-                    const frame = event.currentTarget;
-                    const document = frame.contentDocument;
-                    if (document) {
-                      const height = Math.max(document.documentElement.scrollHeight, document.body?.scrollHeight || 0);
-                      frame.style.height = `${height + 24}px`;
-                    }
-                  }}
-                  className="block min-h-[820px] w-full bg-white"
-                />
+                <div className="bg-slate-100 p-4 sm:p-6">
+                  <iframe
+                    title="Live sent-email view"
+                    srcDoc={previewHtml}
+                    sandbox="allow-same-origin"
+                    onLoad={(event) => {
+                      const frame = event.currentTarget;
+                      const document = frame.contentDocument;
+                      if (document) {
+                        const height = Math.max(document.documentElement.scrollHeight, document.body?.scrollHeight || 0);
+                        frame.style.height = `${height + 24}px`;
+                      }
+                    }}
+                    className="block min-h-[820px] w-full rounded-md border border-slate-300 bg-white shadow-sm"
+                  />
+                </div>
               ) : (
                 <div className="p-4 text-sm text-slate-600">{isPreviewLoading ? 'Rendering email...' : 'Email view will appear here.'}</div>
               )}
