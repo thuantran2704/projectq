@@ -4,7 +4,7 @@ import { BatchEmailWorkspace } from './components/BatchEmailWorkspace';
 import { fetchResumes } from './api/resumes';
 import { fetchTemplates, fetchHealth } from './api/email';
 import type { Resume, HospitalEmailTemplate, BackendHealth } from './types';
-import { HeartPulse, Cloud, MailCheck } from 'lucide-react';
+import { HeartPulse, Cloud, MailCheck, LogIn } from 'lucide-react';
 
 export function App() {
   const [resumes, setResumes] = useState<Resume[]>([]);
@@ -115,7 +115,14 @@ export function App() {
           </div>
         ) : loadError ? (
           <section role="alert" className="mx-auto max-w-xl rounded-lg border border-red-200 bg-red-50 p-5 text-center text-red-800">
-            <p className="text-sm font-medium">{loadError}</p>
+            {loadError.includes('resumes') ? (
+              <div>
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-hospital-600 shadow-sm"><LogIn className="h-7 w-7" /></div>
+                <h2 className="mt-4 text-xl font-semibold text-slate-900">Sign in to continue</h2>
+                <p className="mx-auto mt-2 max-w-sm text-sm text-slate-600">Sign in with an approved Google account to access the resume library and email workspace.</p>
+                <a href="/api/auth/google/start" className="mt-5 inline-flex w-full max-w-sm items-center justify-center gap-2 rounded-lg bg-hospital-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-hospital-700"><LogIn className="h-4 w-4" /> Sign in with Google</a>
+              </div>
+            ) : <p className="text-sm font-medium">{loadError}</p>}
             <button
               type="button"
               onClick={() => void loadData()}
