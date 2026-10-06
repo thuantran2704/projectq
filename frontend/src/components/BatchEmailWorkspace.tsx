@@ -8,6 +8,7 @@ interface HospitalProfile {
   id: string;
   hospitalName: string;
   recipientEmail: string;
+  recipientMode: 'to' | 'cc' | 'bcc';
   hiringTeam: string;
   personalNote: string;
   includeVisaQuestion: boolean;
@@ -43,6 +44,10 @@ const PROFILES_STORAGE_KEY = 'projectq.hospitalProfiles.v1';
 
 type SendFilter = 'new' | 'sent' | 'all' | 'custom';
 
+function parseRecipientEmails(value: string): string[] {
+  return [...new Set(value.split(/[\s,;]+/).map((email) => email.trim().toLowerCase()).filter(Boolean))];
+}
+
 function normalizeSearchText(value: string): string {
   return value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 }
@@ -69,6 +74,7 @@ function createHospitalProfile(): HospitalProfile {
     id: crypto.randomUUID(),
     hospitalName: '',
     recipientEmail: '',
+    recipientMode: 'to',
     hiringTeam: 'Nurse Residency Hiring Team',
     personalNote: '',
     includeVisaQuestion: true,
@@ -94,6 +100,7 @@ function loadHospitalProfiles(): HospitalProfile[] {
       id: profile.id,
       hospitalName: profile.hospitalName,
       recipientEmail: profile.recipientEmail,
+      recipientMode: (profile.recipientMode === 'cc' || profile.recipientMode === 'bcc' ? profile.recipientMode : 'to') as HospitalProfile['recipientMode'],
       hiringTeam: typeof profile.hiringTeam === 'string' ? profile.hiringTeam : 'Nurse Residency Hiring Team',
       personalNote: typeof profile.personalNote === 'string' ? profile.personalNote : '',
       includeVisaQuestion: profile.includeVisaQuestion !== false,
@@ -344,7 +351,7 @@ export const BatchEmailWorkspace: React.FC<BatchEmailWorkspaceProps> = ({
       return;
     }
 
-    const invalidAddress = selectedProfiles.find((profile) => !EMAIL_PATTERN.test(profile.recipientEmail.trim()));
+    const invalidAddress = selectedProfiles.find((profile) => parseRecipientEmails(profile.recipientEmail).some((email) => !EMAIL_PATTERN.test(email)));
     if (invalidAddress) {
       setSendError(`Check the recipient email for ${invalidAddress.hospitalName}.`);
       setActiveProfileId(invalidAddress.id);
@@ -354,8 +361,7 @@ export const BatchEmailWorkspace: React.FC<BatchEmailWorkspaceProps> = ({
 
     const emailCounts = new Map<string, number>();
     selectedProfiles.forEach((profile) => {
-      const address = profile.recipientEmail.trim().toLowerCase();
-      emailCounts.set(address, (emailCounts.get(address) || 0) + 1);
+      parseRecipientEmails(profile.recipientEmail).forEach((address) => emailCounts.set(address, (emailCounts.get(address) || 0) + 1));
     });
     if ([...emailCounts.values()].some((count) => count > 1)) {
       setSendError('A recipient email appears more than once. Remove duplicate profiles before sending.');
@@ -379,8 +385,14 @@ export const BatchEmailWorkspace: React.FC<BatchEmailWorkspaceProps> = ({
         setSendStates((current) => ({ ...current, [profile.id]: { status: 'sending', message: 'Sending' } }));
 
         try {
+          const recipients = parseRecipientEmails(profile.recipientEmail);
+          const recipientPayload = profile.recipientMode === 'cc'
+            ? { to: recipients[0], cc: recipients.slice(1).join(',') || undefined }
+            : profile.recipientMode === 'bcc'
+              ? { to: recipients[0], bcc: recipients.slice(1).join(',') || undefined }
+              : { to: recipients.join(',') };
           const result = await sendHospitalEmail({
-            to: profile.recipientEmail.trim(),
+            ...recipientPayload,
             subject: override?.subject ?? email.subject,
             body: override?.body ?? email.body,
             resumeFilename: attachResume ? selectedResume?.name : undefined,
@@ -619,15 +631,18 @@ export const BatchEmailWorkspace: React.FC<BatchEmailWorkspaceProps> = ({
                             placeholder="Hospital name"
                             className="min-w-0 rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-hospital-500 disabled:opacity-60"
                           />
+                          <div className="min-w-0">
                           <input
                             aria-label={`Recipient email ${index + 1}`}
-                            type="email"
+                            type="text"
                             value={profile.recipientEmail}
                             disabled={isSending}
                             onChange={(event) => updateProfile(profile.id, { recipientEmail: event.target.value })}
-                            placeholder="Recipient email"
+                            placeholder="a@hospital.com, b@hospital.com"
                             className="min-w-0 rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-hospital-500 disabled:opacity-60"
                           />
+                          <div className="mt-2 flex items-center gap-2"><select value={profile.recipientMode} disabled={isSending} onChange={(event) => updateProfile(profile.id, { recipientMode: event.target.value as HospitalProfile['recipientMode'] })} className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700"><option value="to">Send as To</option><option value="cc">Send as CC</option><option value="bcc">Send as BCC</option></select><span className="text-[11px] text-slate-500">Separate emails with commas, spaces, semicolons, or new lines.</span></div>
+                          </div>
                         </div>
 
                         <details className="text-xs text-slate-600">
