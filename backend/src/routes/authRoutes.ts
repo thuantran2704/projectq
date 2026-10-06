@@ -24,7 +24,7 @@ router.get('/google/connect', (_req, res) => {
 router.get('/google/callback', async (req, res) => {
   const error = typeof req.query.error === 'string' ? req.query.error : '';
   const description = typeof req.query.error_description === 'string' ? req.query.error_description : '';
-  if (error) return res.status(400).send(`Google authorization failed: ${error}${description ? ` — ${description}` : ''}`);
+  if (error) return res.status(400).send(`Google authorization failed: ${error}${description ? `: ${description}` : ''}`);
 
   const code = typeof req.query.code === 'string' ? req.query.code : '';
   if (!code) return res.status(400).send('Google returned no authorization code. Start at /api/auth/google/start.');
