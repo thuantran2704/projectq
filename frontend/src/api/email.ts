@@ -11,21 +11,57 @@ export async function fetchTemplates(): Promise<HospitalEmailTemplate[]> {
   return json.data || [];
 }
 
-export async function sendHospitalEmail(payload: SendEmailPayload): Promise<{ success: boolean; message: string; messageId?: string }> {
-  const res = await fetch(`${API_BASE}/email/send`, {
+export async function sendHospitalEmail(payload: SendEmailPayload): Promise<{
+  success: boolean;
+  message: string;
+  messageId?: string;
+  accepted?: string[];
+  rejected?: string[];
+  smtpResponse?: string;
+}> {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 30000);
+
+  try {
+    const res = await fetch(`${API_BASE}/email/send`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      // The backend sends using its stored Gmail refresh token.
+      body: JSON.stringify({ ...payload, useGmail: true }),
+      signal: controller.signal
+    });
+
+    const json = await res.json();
+    if (!res.ok) {
+      throw new Error(json.error?.message || 'Failed to dispatch email');
+    }
+
+    return json;
+  } catch (error: unknown) {
+    if (controller.signal.aborted) {
+      throw new Error('Send timed out. Check the mailbox before retrying to avoid duplicates.');
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+}
+
+export async function renderEmailPreview(body: string, signal: AbortSignal): Promise<string> {
+  const res = await fetch(`${API_BASE}/email/preview`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload)
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ body }),
+    signal
   });
 
   const json = await res.json();
   if (!res.ok) {
-    throw new Error(json.error?.message || 'Failed to dispatch email');
+    throw new Error(json.error?.message || 'Failed to render email preview');
   }
-
-  return json;
+  return json.html;
 }
 
 export async function fetchHealth(): Promise<BackendHealth> {

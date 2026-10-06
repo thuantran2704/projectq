@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
@@ -18,13 +18,13 @@ services:
       - key: GCP_SERVICE_ACCOUNT_KEY
         sync: false
       - key: SMTP_HOST
-        value: smtp.gmail.com
+        value: smtp-relay.brevo.com
       - key: SMTP_PORT
-        value: 465
+        value: 587
       - key: SMTP_SECURE
-        value: "true"
+        value: "false"
       - key: SMTP_USER
-        value: nguyenquynh11102005@gmail.com
+        value: bc7512001@smtp-brevo.com
       - key: SMTP_PASS
         sync: false
       - key: SMTP_FROM_NAME

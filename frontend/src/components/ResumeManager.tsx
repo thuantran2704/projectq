@@ -73,22 +73,22 @@ export const ResumeManager: React.FC<ResumeManagerProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col h-full">
+    <div className="bg-slate-100 rounded-lg border border-slate-300 p-4 flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-hospital-600" />
-            Resume Manager
+          <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+            <FileText className="w-4 h-4 text-hospital-500" />
+            Resume library
           </h2>
-          <p className="text-sm text-slate-500">
-            Upload and select which resume to attach when emailing hospitals.
+          <p className="text-xs text-slate-500 mt-1">
+            Select one to attach to this draft.
           </p>
         </div>
       </div>
 
       {/* Upload Zone */}
       <div className="mb-6">
-        <label className="relative border-2 border-dashed border-slate-300 hover:border-hospital-500 rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer transition-colors bg-slate-50/50 hover:bg-hospital-50/30">
+        <label className="relative border border-dashed border-slate-300 hover:border-hospital-500 rounded-md p-4 flex flex-col items-center justify-center cursor-pointer transition-colors bg-slate-50 hover:bg-hospital-50">
           <input
             ref={fileInputRef}
             type="file"
@@ -104,11 +104,11 @@ export const ResumeManager: React.FC<ResumeManagerProps> = ({
             </div>
           ) : (
             <div className="text-center">
-              <div className="w-10 h-10 rounded-full bg-hospital-100 text-hospital-600 flex items-center justify-center mx-auto mb-2">
-                <Upload className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-md bg-hospital-100 text-hospital-500 flex items-center justify-center mx-auto mb-2">
+                <Upload className="w-4 h-4" />
               </div>
               <p className="text-sm font-semibold text-slate-700">
-                Click to upload a new resume
+                Add a resume
               </p>
               <p className="text-xs text-slate-500 mt-1">
                 Supports PDF, DOC, or DOCX up to 10MB
@@ -139,7 +139,7 @@ export const ResumeManager: React.FC<ResumeManagerProps> = ({
         </h3>
 
         {resumes.length === 0 ? (
-          <div className="text-center py-8 px-4 border border-dashed border-slate-200 rounded-lg text-slate-400">
+          <div className="text-center py-6 px-4 border border-dashed border-slate-300 rounded-md text-slate-500">
             <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm font-medium">No resumes uploaded yet.</p>
             <p className="text-xs mt-1">Upload a resume above to get started.</p>
@@ -154,16 +154,16 @@ export const ResumeManager: React.FC<ResumeManagerProps> = ({
                 <div
                   key={resume.name}
                   onClick={() => onSelectResume(resume)}
-                  className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                  className={`p-3 rounded-md border transition-colors cursor-pointer flex items-center justify-between gap-3 ${
                     isSelected
                       ? 'border-hospital-500 bg-hospital-50/60 shadow-sm ring-1 ring-hospital-500'
-                      : 'border-slate-200 hover:border-slate-300 bg-white'
+                      : 'border-slate-300 hover:border-slate-400 bg-white'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
                       className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                        isSelected ? 'bg-hospital-600 text-white' : 'bg-slate-100 text-slate-600'
+                        isSelected ? 'bg-hospital-600 text-white' : 'bg-slate-300 text-slate-700'
                       }`}
                     >
                       <FileText className="w-5 h-5" />
@@ -195,10 +195,10 @@ export const ResumeManager: React.FC<ResumeManagerProps> = ({
                       type="button"
                       onClick={() => onSelectResume(isSelected ? null : resume)}
                       title={isSelected ? 'Resume selected to attach' : 'Click to select this resume'}
-                      className={`px-2.5 py-1 text-xs font-medium rounded-lg flex items-center gap-1 transition-colors ${
+                      className={`px-2.5 py-1 text-xs font-medium rounded-md flex items-center gap-1 transition-colors ${
                         isSelected
                           ? 'bg-hospital-600 text-white shadow-xs'
-                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                          : 'bg-slate-300 hover:bg-slate-400 text-slate-800'
                       }`}
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
@@ -212,7 +212,7 @@ export const ResumeManager: React.FC<ResumeManagerProps> = ({
                         rel="noreferrer"
                         download={resume.originalName}
                         title="Download or preview resume"
-                        className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                        className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-300 rounded-md transition-colors"
                       >
                         <Download className="w-4 h-4" />
                       </a>
@@ -223,7 +223,7 @@ export const ResumeManager: React.FC<ResumeManagerProps> = ({
                       onClick={() => handleDelete(resume)}
                       disabled={isDeleting}
                       title="Delete resume"
-                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                      className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
                     >
                       {isDeleting ? (
                         <Loader2 className="w-4 h-4 animate-spin text-red-600" />

@@ -40,5 +40,5 @@ export interface BackendHealth {
   status: string;
   timestamp: string;
   gcpConfigured: boolean;
-  mailerConfigured: boolean;
+  gmailConfigured: boolean;
 }
