@@ -1,8 +1,16 @@
 import { Router } from 'express';
 import { exchangeGoogleCode, googleAuthorizationUrl, googleConfigured } from '../config/googleAuth.js';
-import { userCookie } from '../middleware/allowedUser.js';
+import { userCookie, requireAllowedUser } from '../middleware/allowedUser.js';
 
 const router = Router();
+
+router.get('/me', requireAllowedUser, (req, res) => {
+  const value = req.headers.cookie?.match(/projectq_allowed_user=([^;]+)/)?.[1] || '';
+  const decoded = decodeURIComponent(value);
+  const email = decoded.slice(0, decoded.lastIndexOf('.')).toLowerCase();
+  const quynhEmail = (process.env.QUYNH_EMAIL || 'nguyenquynh11102005@gmail.com').toLowerCase();
+  res.json({ email, workspace: email === quynhEmail ? 'quynh' : 'job-applications' });
+});
 
 router.get('/google/start', (_req, res) => {
   if (!googleConfigured()) return res.status(503).send('Google OAuth is not configured.');

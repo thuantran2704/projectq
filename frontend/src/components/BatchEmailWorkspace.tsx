@@ -383,7 +383,8 @@ export const BatchEmailWorkspace: React.FC<BatchEmailWorkspaceProps> = ({
             to: profile.recipientEmail.trim(),
             subject: override?.subject ?? email.subject,
             body: override?.body ?? email.body,
-            resumeFilename: attachResume ? selectedResume?.name : undefined
+            resumeFilename: attachResume ? selectedResume?.name : undefined,
+            senderWorkspace: 'quynh'
           });
           const simulated = result.message.includes('Simulated mode');
           const relayMessage = simulated

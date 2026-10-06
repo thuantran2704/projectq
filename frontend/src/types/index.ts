@@ -34,6 +34,7 @@ export interface SendEmailPayload {
   subject: string;
   body: string;
   resumeFilename?: string;
+  senderWorkspace?: 'quynh' | 'thuan';
 }
 
 export interface BackendHealth {

@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ResumeManager } from './components/ResumeManager';
 import { BatchEmailWorkspace } from './components/BatchEmailWorkspace';
+import { JobApplicationWorkspace } from './components/JobApplicationWorkspace';
+import { fetchCurrentUser } from './api/currentUser';
 import { fetchResumes } from './api/resumes';
 import { fetchTemplates, fetchHealth } from './api/email';
 import type { Resume, HospitalEmailTemplate, BackendHealth } from './types';
@@ -13,12 +15,15 @@ export function App() {
   const [health, setHealth] = useState<BackendHealth | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [workspace, setWorkspace] = useState<'quynh' | 'job-applications'>('quynh');
+  const [activeTab, setActiveTab] = useState<'job' | 'quynh'>('job');
 
   const loadData = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
     try {
-      const [resumesResult, templatesResult, healthResult] = await Promise.allSettled([
+      const [userResult, resumesResult, templatesResult, healthResult] = await Promise.allSettled([
+        fetchCurrentUser(),
         fetchResumes(),
         fetchTemplates(),
         fetchHealth()
@@ -26,6 +31,7 @@ export function App() {
 
       const errors: string[] = [];
       let resumesData: Resume[] = [];
+      if (userResult.status === 'fulfilled') { setWorkspace(userResult.value.workspace); }
 
       if (resumesResult.status === 'fulfilled') {
         resumesData = resumesResult.value;
@@ -133,7 +139,8 @@ export function App() {
           </section>
         ) : (
           <>
-            <div className="flex items-end justify-between gap-4 mb-5">
+            {workspace === 'job-applications' && <div className="mb-5 flex gap-2 border-b border-slate-200"><button type="button" onClick={() => setActiveTab('job')} className={`px-3 py-2 text-sm font-semibold ${activeTab === 'job' ? 'border-b-2 border-indigo-600 text-indigo-700' : 'text-slate-500'}`}>Job applications</button><button type="button" onClick={() => setActiveTab('quynh')} className={`px-3 py-2 text-sm font-semibold ${activeTab === 'quynh' ? 'border-b-2 border-indigo-600 text-indigo-700' : 'text-slate-500'}`}>Quynh’s outreach</button></div>}
+            {workspace === 'job-applications' && activeTab === 'job' ? <JobApplicationWorkspace resumes={resumes} selectedResume={selectedResume} onSelectResume={setSelectedResume} /> : <><div className="flex items-end justify-between gap-4 mb-5">
               <div>
                 <p className="text-xs font-medium text-slate-500 mb-1">WORKSPACE</p>
                 <h2 className="text-lg font-semibold text-slate-900">Application drafts</h2>
@@ -151,6 +158,7 @@ export function App() {
                 />
               )}
             />
+            </>}
           </>
         )}
       </main>

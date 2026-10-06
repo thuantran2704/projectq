@@ -26,7 +26,7 @@ export async function sendHospitalEmail(payload: SendEmailPayload): Promise<{
     const res = await fetch(`${API_BASE}/email/send`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       // The backend sends using its stored Gmail refresh token.
       body: JSON.stringify({ ...payload, useGmail: true }),
