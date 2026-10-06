@@ -315,6 +315,19 @@ export const BatchEmailWorkspace: React.FC<BatchEmailWorkspaceProps> = ({
     setSendStates({});
   };
 
+  const createLoveDraft = () => {
+    if (profiles.length >= MAX_PROFILES) return;
+    const profile = createHospitalProfile();
+    const loveProfile = { ...profile, hospitalName: 'Thuan', recipientEmail: 'thuantran2704@gmail.com', hiringTeam: 'Thuan', selectedForSend: true };
+    setProfiles((current) => [...current.map((item) => ({ ...item, selectedForSend: false })), loveProfile]);
+    setActiveProfileId(loveProfile.id);
+    setExpandedProfileId(loveProfile.id);
+    setSendFilter('custom');
+    setManualOverrides((current) => ({ ...current, [loveProfile.id]: { subject: 'I miss you ❤️', body: 'I miss you ❤️\n\nJust wanted to send you a little love.' } }));
+    setActiveTab('edit');
+    setSendError(null);
+  };
+
   const handleSendSelected = async (event: React.FormEvent) => {
     event.preventDefault();
     const selectedProfiles = sendProfiles;
@@ -442,7 +455,7 @@ export const BatchEmailWorkspace: React.FC<BatchEmailWorkspaceProps> = ({
           <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">Send personalized emails</h2>
           <p className="mt-1 text-sm text-slate-500">Choose recipients, tailor the message, then review it before sending.</p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-slate-500"><span className="rounded-full bg-slate-100 px-3 py-1.5 font-medium text-slate-700">{newCount} new</span><span className="rounded-full bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">{sentProfileCount} sent</span></div>
+        <div className="flex flex-wrap items-center justify-end gap-2 text-xs text-slate-500"><span className="rounded-full bg-slate-100 px-3 py-1.5 font-medium text-slate-700">{newCount} new</span><span className="rounded-full bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">{sentProfileCount} sent</span><button type="button" onClick={createLoveDraft} disabled={isSending || profiles.length >= MAX_PROFILES} className="inline-flex items-center gap-1.5 rounded-full bg-rose-500 px-4 py-2 font-semibold text-white shadow-sm transition hover:bg-rose-600 disabled:opacity-50">❤️ Click to send love</button></div>
       </div>
 
       <form onSubmit={handleSendSelected} className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
