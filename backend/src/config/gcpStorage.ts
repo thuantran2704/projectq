@@ -25,7 +25,14 @@ function getInlineCredentials(): Record<string, unknown> | null {
   const raw = process.env.GCP_SERVICE_ACCOUNT_KEY;
   if (!raw?.trim()) return null;
   try {
-    return JSON.parse(raw.trim()) as Record<string, unknown>;
+    const credentials = JSON.parse(raw.trim()) as Record<string, unknown>;
+    if (typeof credentials.private_key === 'string') {
+      credentials.private_key = credentials.private_key
+        .replace(/\\n/g, '\n')
+        .replace(/\\r/g, '')
+        .trim();
+    }
+    return credentials;
   } catch (err) {
     console.error('Failed to parse GCP_SERVICE_ACCOUNT_KEY JSON string:', err);
     return null;
