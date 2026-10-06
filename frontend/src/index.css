@@ -88,12 +88,12 @@ a:focus-visible {
 .love-note input,
 .love-note textarea {
   border-color: #c97888;
-  background: #fffaf9;
-  color: #3f2933 !important;
-  caret-color: #6f2338;
+  background: #8d4054;
+  color: #ffe4e8 !important;
+  caret-color: #ffe4e8;
 }
 
 .love-note input::placeholder,
 .love-note textarea::placeholder {
-  color: #9f7b85;
+  color: #efb4bf;
 }
