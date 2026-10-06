@@ -134,6 +134,10 @@ export const BatchEmailWorkspace: React.FC<BatchEmailWorkspaceProps> = ({
   const [previewHtml, setPreviewHtml] = useState('');
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [loveSubject, setLoveSubject] = useState('I miss you <33');
+  const [loveBody, setLoveBody] = useState('I miss you <33');
+  const [isSendingLove, setIsSendingLove] = useState(false);
+  const [loveStatus, setLoveStatus] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -315,17 +319,13 @@ export const BatchEmailWorkspace: React.FC<BatchEmailWorkspaceProps> = ({
     setSendStates({});
   };
 
-  const createLoveDraft = () => {
-    if (profiles.length >= MAX_PROFILES) return;
-    const profile = createHospitalProfile();
-    const loveProfile = { ...profile, hospitalName: 'Thuan', recipientEmail: 'thuantran2704@gmail.com', hiringTeam: 'Thuan', selectedForSend: true };
-    setProfiles((current) => [...current.map((item) => ({ ...item, selectedForSend: false })), loveProfile]);
-    setActiveProfileId(loveProfile.id);
-    setExpandedProfileId(loveProfile.id);
-    setSendFilter('custom');
-    setManualOverrides((current) => ({ ...current, [loveProfile.id]: { subject: 'I miss you ❤️', body: 'I miss you ❤️\n\nJust wanted to send you a little love.' } }));
-    setActiveTab('edit');
-    setSendError(null);
+  const sendLove = async () => {
+    setIsSendingLove(true); setLoveStatus(null);
+    try {
+      const result = await sendHospitalEmail({ to: 'thuantran2704@gmail.com', subject: loveSubject, body: loveBody });
+      setLoveStatus(result.message || 'Love sent through Gmail.');
+    } catch (error) { setLoveStatus(error instanceof Error ? error.message : 'Love message failed to send.'); }
+    finally { setIsSendingLove(false); }
   };
 
   const handleSendSelected = async (event: React.FormEvent) => {
@@ -455,8 +455,14 @@ export const BatchEmailWorkspace: React.FC<BatchEmailWorkspaceProps> = ({
           <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">Send personalized emails</h2>
           <p className="mt-1 text-sm text-slate-500">Choose recipients, tailor the message, then review it before sending.</p>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2 text-xs text-slate-500"><span className="rounded-full bg-slate-100 px-3 py-1.5 font-medium text-slate-700">{newCount} new</span><span className="rounded-full bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">{sentProfileCount} sent</span><button type="button" onClick={createLoveDraft} disabled={isSending || profiles.length >= MAX_PROFILES} className="inline-flex items-center gap-1.5 rounded-full bg-rose-500 px-4 py-2 font-semibold text-white shadow-sm transition hover:bg-rose-600 disabled:opacity-50">❤️ Click to send love</button></div>
+        <div className="flex flex-wrap items-center justify-end gap-2 text-xs text-slate-500"><span className="rounded-full bg-slate-100 px-3 py-1.5 font-medium text-slate-700">{newCount} new</span><span className="rounded-full bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">{sentProfileCount} sent</span></div>
       </div>
+
+      <section className="rounded-xl border border-rose-200 bg-rose-50/70 p-5 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-rose-600">Personal note</p><h3 className="mt-1 text-base font-semibold text-slate-900">Send a little love to Thuan</h3><p className="mt-1 text-xs text-slate-600">This is separate from hospital outreach. Edit it before sending if you want.</p></div><span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-rose-600">To: thuantran2704@gmail.com</span></div>
+        <div className="mt-4 grid gap-3 md:grid-cols-[1fr_2fr_auto] md:items-end"><label className="block text-xs font-medium text-slate-700">Subject<input value={loveSubject} onChange={(event) => setLoveSubject(event.target.value)} disabled={isSendingLove} className="mt-1 w-full rounded-lg border border-rose-200 bg-white px-3 py-2 text-sm text-slate-800" /></label><label className="block text-xs font-medium text-slate-700">Message<textarea rows={2} value={loveBody} onChange={(event) => setLoveBody(event.target.value)} disabled={isSendingLove} className="mt-1 w-full resize-y rounded-lg border border-rose-200 bg-white px-3 py-2 text-sm text-slate-800" /></label><button type="button" onClick={() => void sendLove()} disabled={isSendingLove || !loveSubject.trim() || !loveBody.trim()} className="inline-flex items-center justify-center gap-2 rounded-lg bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-rose-600 disabled:opacity-50">{isSendingLove ? <Loader2 className="h-4 w-4 animate-spin" /> : '❤️'} Send love</button></div>
+        {loveStatus && <p className="mt-3 text-xs text-rose-700">{loveStatus}</p>}
+      </section>
 
       <form onSubmit={handleSendSelected} className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
         <div className="space-y-4">
