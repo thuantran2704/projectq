@@ -7,13 +7,19 @@ import {
 } from '../config/gcpStorage.js';
 import { AppError } from '@projectq/middleware';
 
+function ownerFromRequest(req: Request): 'quynh' | 'thuan' {
+  const cookie = req.headers.cookie?.match(/projectq_allowed_user=([^;]+)/)?.[1] || '';
+  const email = decodeURIComponent(cookie).slice(0, decodeURIComponent(cookie).lastIndexOf('.')).toLowerCase();
+  return email === (process.env.QUYNH_EMAIL || 'nguyenquynh11102005@gmail.com').toLowerCase() ? 'quynh' : 'thuan';
+}
+
 export async function uploadResume(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     if (!req.file) {
       throw new AppError('Please select a resume file to upload (PDF, DOC, DOCX).', 400);
     }
 
-    const savedResume = await uploadResumeFile(req.file);
+    const savedResume = await uploadResumeFile(req.file, ownerFromRequest(req));
 
     res.status(201).json({
       success: true,
@@ -27,7 +33,7 @@ export async function uploadResume(req: Request, res: Response, next: NextFuncti
 
 export async function getResumes(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const resumes = await listResumes();
+    const resumes = await listResumes(ownerFromRequest(req));
     res.json({
       success: true,
       data: resumes
@@ -45,7 +51,7 @@ export async function deleteResumeHandler(req: Request, res: Response, next: Nex
       throw new AppError('Resume filename parameter is required.', 400);
     }
 
-    await deleteResume(filename);
+    await deleteResume(filename, ownerFromRequest(req));
 
     res.json({
       success: true,
@@ -64,7 +70,7 @@ export async function downloadResumeHandler(req: Request, res: Response, next: N
       throw new AppError('Resume filename parameter is required.', 400);
     }
 
-    const { buffer, originalName, contentType } = await getResumeBuffer(filename);
+    const { buffer, originalName, contentType } = await getResumeBuffer(filename, ownerFromRequest(req));
 
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', `attachment; filename="${originalName}"`);

@@ -9,9 +9,9 @@ export function renderEmailHtml(body: string, bannerSrc: string): string {
 }
 
 const BANNER = fileURLToPath(new URL('../../../frontend/public/usf-nursing-banner.png', import.meta.url));
-export async function sendGmailEmail(options: { accessToken: string; to: string; cc?: string; bcc?: string; subject: string; body: string; resumeFilename?: string }) {
+export async function sendGmailEmail(options: { accessToken: string; to: string; cc?: string; bcc?: string; subject: string; body: string; resumeFilename?: string; resumeOwner?: 'quynh' | 'thuan' }) {
   const attachments: Array<Record<string, unknown>> = [{ filename: 'usf-nursing-banner.png', content: readFileSync(BANNER), contentType: 'image/png', cid: 'usf-nursing-banner@projectq', contentDisposition: 'inline' }];
-  if (options.resumeFilename) { const resume = await getResumeBuffer(options.resumeFilename); attachments.push({ filename: resume.originalName, content: resume.buffer, contentType: resume.contentType }); }
+  if (options.resumeFilename) { const resume = await getResumeBuffer(options.resumeFilename, options.resumeOwner || 'quynh'); attachments.push({ filename: resume.originalName, content: resume.buffer, contentType: resume.contentType }); }
   const transport = nodemailer.createTransport({ streamTransport: true, buffer: true, newline: 'unix' });
   const info = await transport.sendMail({
     from: 'me',

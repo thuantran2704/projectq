@@ -93,7 +93,7 @@ function getStorageClient(): Storage {
   return storageClient;
 }
 
-export async function uploadResumeFile(file: Express.Multer.File): Promise<ResumeMetadata> {
+export async function uploadResumeFile(file: Express.Multer.File, owner = 'quynh'): Promise<ResumeMetadata> {
   const timestamp = Date.now();
   const safeOriginalName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
   const destinationName = `${timestamp}-${safeOriginalName}`;
@@ -101,7 +101,7 @@ export async function uploadResumeFile(file: Express.Multer.File): Promise<Resum
 
   if (isGcpConfigured() && bucketName) {
     const bucket = getStorageClient().bucket(bucketName);
-    const gcsFile = bucket.file(`resumes/${destinationName}`);
+    const gcsFile = bucket.file(`resumes/${owner}/${destinationName}`);
 
     await gcsFile.save(file.buffer, {
       contentType: file.mimetype,
@@ -149,11 +149,11 @@ export async function uploadResumeFile(file: Express.Multer.File): Promise<Resum
   return metaData;
 }
 
-export async function listResumes(): Promise<ResumeMetadata[]> {
+export async function listResumes(owner = 'quynh'): Promise<ResumeMetadata[]> {
   const bucketName = getBucketName();
   if (isGcpConfigured() && bucketName) {
     const bucket = getStorageClient().bucket(bucketName);
-    const [files] = await bucket.getFiles({ prefix: 'resumes/' });
+    const [files] = await bucket.getFiles({ prefix: `resumes/${owner}/` });
 
     const results: ResumeMetadata[] = [];
     for (const file of files) {
@@ -231,13 +231,13 @@ export async function listResumes(): Promise<ResumeMetadata[]> {
   return results;
 }
 
-export async function deleteResume(filename: string): Promise<void> {
+export async function deleteResume(filename: string, owner = 'quynh'): Promise<void> {
   const cleanName = path.basename(filename);
   const bucketName = getBucketName();
 
   if (isGcpConfigured() && bucketName) {
     const bucket = getStorageClient().bucket(bucketName);
-    const gcsFile = bucket.file(`resumes/${cleanName}`);
+    const gcsFile = bucket.file(`resumes/${owner}/${cleanName}`);
     await gcsFile.delete();
     return;
   }
@@ -254,13 +254,13 @@ export async function deleteResume(filename: string): Promise<void> {
   }
 }
 
-export async function getResumeBuffer(filename: string): Promise<{ buffer: Buffer; originalName: string; contentType: string }> {
+export async function getResumeBuffer(filename: string, owner = 'quynh'): Promise<{ buffer: Buffer; originalName: string; contentType: string }> {
   const cleanName = path.basename(filename);
   const bucketName = getBucketName();
 
   if (isGcpConfigured() && bucketName) {
     const bucket = getStorageClient().bucket(bucketName);
-    const gcsFile = bucket.file(`resumes/${cleanName}`);
+    const gcsFile = bucket.file(`resumes/${owner}/${cleanName}`);
     const [fileBuffer] = await gcsFile.download();
     const [metadata] = await gcsFile.getMetadata();
     const customMeta = metadata.metadata || {};

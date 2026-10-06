@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import { FileText, Send } from 'lucide-react';
 import type { Resume } from '../types';
 import { sendHospitalEmail } from '../api/email';
 
-type Props = { resumes: Resume[]; selectedResume: Resume | null; onSelectResume: (resume: Resume | null) => void };
+type Props = { resumes: Resume[]; selectedResume: Resume | null; onSelectResume: (resume: Resume | null) => void; resumeManager: ReactNode };
 const signature = `Thuan Tran
 Software Engineer Intern @ Tesla
 Previously MLE Intern @ Microsoft
@@ -14,7 +15,7 @@ LeetCode: https://leetcode.com/u/thuantran274`;
 const companyFromEmail = (email: string) => { const domain = email.split('@')[1]?.toLowerCase().replace(/^www\./, ''); const name = domain?.split('.')[0] || ''; return name ? name[0].toUpperCase() + name.slice(1) : ''; };
 const titleFromLink = (link: string) => { try { const slug = new URL(link).pathname.split('/').filter(Boolean).pop() || ''; return decodeURIComponent(slug).replace(/[-_]+/g, ' ').replace(/\b\d+\b/g, '').replace(/\s+/g, ' ').trim().replace(/\b\w/g, c => c.toUpperCase()); } catch { return ''; } };
 
-export function JobApplicationWorkspace({ resumes, selectedResume, onSelectResume }: Props) {
+export function JobApplicationWorkspace({ resumes, selectedResume, onSelectResume, resumeManager }: Props) {
   const [firstName, setFirstName] = useState(''); const [email, setEmail] = useState(''); const [company, setCompany] = useState(''); const [desiredTitle, setDesiredTitle] = useState(''); const [jobLink, setJobLink] = useState(''); const [kind, setKind] = useState<'referral' | 'hr'>('referral'); const [status, setStatus] = useState('');
   const data = useMemo(() => { const n = firstName || '{{first name}}'; const c = company || '{{company}}'; const t = desiredTitle || '{{desired role}}'; const l = jobLink || '{{job link}}'; return kind === 'referral' ? { subject: `Question about the ${t} role at ${c}`, body: `Hi ${n},\n\nI came across the ${t} opening at ${c} and wanted to reach out because the work your team is doing caught my attention. Here is the posting: ${l}\n\nMy background is in building software and working on projects involving intelligent systems, machine learning, data, and applied product development. This role looks especially relevant to the kind of work I’ve enjoyed doing.\n\nWould you be open to a 15-minute conversation about your experience at ${c} and what the team is working on? If, after speaking, you think my background could be a fit, I’d be grateful if you would consider referring me. I completely understand if you are not comfortable doing that.\n\nI attached my resume so you have some context.\n\nBest,\n${signature}` } : { subject: `Interest in the ${t} role at ${c}`, body: `Hi ${n},\n\nI’ve been learning more about ${c}, and I really like the problems the company is working on. I’m exploring opportunities in software and applied technology, and the ${t} role stood out to me: ${l}\n\nMy experience includes building software and working with intelligent systems, machine learning, and data. From what I’ve seen, I believe I could be a strong fit for the work your teams are doing.\n\nWould you be open to a 15-minute conversation about the company, the team, and what you look for in candidates for roles like this? I’d genuinely appreciate the chance to learn more.\n\nI attached my resume for context.\n\nBest,\n${signature}` }; }, [kind, firstName, company, desiredTitle, jobLink]);
   async function submit(event: React.FormEvent) { event.preventDefault(); if (!firstName || !email || !company || !desiredTitle || !jobLink) return setStatus('Fill in every field before sending.'); try { setStatus('Sending...'); await sendHospitalEmail({ to: email, subject: data.subject, body: data.body, resumeFilename: selectedResume?.name, senderWorkspace: 'thuan' }); setStatus('Email sent through your Gmail account.'); } catch (error) { setStatus(error instanceof Error ? error.message : 'Send failed.'); } }

@@ -21,7 +21,7 @@ export async function sendEmail(req: Request, res: Response, next: NextFunction)
     // Determine which service to use
     if (!useGmail) throw new AppError('Gmail sending is required.', 400);
     const senderEmail = senderWorkspace === 'quynh' ? (process.env.QUYNH_EMAIL || 'nguyenquynh11102005@gmail.com') : (process.env.THUAN_EMAIL || 'thuantran2704@gmail.com');
-    const result = await sendGmailEmail({ accessToken: await getGoogleAccessToken(senderEmail), to, cc, bcc, subject, body, resumeFilename });
+    const result = await sendGmailEmail({ accessToken: await getGoogleAccessToken(senderEmail), to, cc, bcc, subject, body, resumeFilename, resumeOwner: senderWorkspace === 'quynh' ? 'quynh' : 'thuan' });
     res.json({ success: true, message: 'Email sent through Gmail API.', messageId: result.messageId, accepted: result.accepted, rejected: result.rejected, smtpResponse: result.response, sentWithResume: Boolean(resumeFilename), service: 'Gmail API' });
   } catch (error) {
     next(error);
