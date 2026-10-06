@@ -16,6 +16,10 @@
     "dev:frontend": "npm run dev --workspace=frontend"
   },
   "devDependencies": {
+    "@types/pg": "^8.23.1",
     "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "pg": "^8.23.1"
   }
 }

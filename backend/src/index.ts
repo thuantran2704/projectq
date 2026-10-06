@@ -10,6 +10,8 @@ import emailRoutes from './routes/emailRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import { googleConfigured } from './config/googleAuth.js';
 import { isGcpConfigured } from './config/gcpStorage.js';
+import internalRoutes from './routes/internalRoutes.js';
+import { initializeDatabase } from './config/database.js';
 
 // Load environment variables from backend/.env or root .env
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -62,6 +64,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/resumes', resumeRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/internal', internalRoutes);
 
 // Serve frontend static build in production (single web-service deployment)
 const frontendDistCandidates = [
@@ -92,10 +95,10 @@ if (frontendDistPath) {
 // Centralized error handling middleware
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+initializeDatabase().then(() => app.listen(PORT, () => {
   console.log(`=======================================================`);
   console.log(`ðŸ¥ Hospital Job Dispatcher Backend running on port ${PORT}`);
   console.log(`   API URL: http://localhost:${PORT}/api`);
   console.log(`   GCP Cloud Storage: ${isGcpConfigured() ? 'âœ… Configured' : 'âš ï¸ Local fallback active'}`);
   console.log(`=======================================================`);
-});
+})).catch((error) => { console.error('Database initialization failed:', error); process.exit(1); });
