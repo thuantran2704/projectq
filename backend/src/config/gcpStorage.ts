@@ -260,9 +260,18 @@ export async function getResumeBuffer(filename: string, owner = 'quynh'): Promis
 
   if (isGcpConfigured() && bucketName) {
     const bucket = getStorageClient().bucket(bucketName);
-    const gcsFile = bucket.file(`resumes/${owner}/${cleanName}`);
-    const [fileBuffer] = await gcsFile.download();
-    const [metadata] = await gcsFile.getMetadata();
+    let gcsFile = bucket.file(`resumes/${owner}/${cleanName}`);
+    let fileBuffer: Buffer;
+    let metadata: any;
+    try {
+      [fileBuffer] = await gcsFile.download();
+      [metadata] = await gcsFile.getMetadata();
+    } catch (error) {
+      if (owner !== 'quynh') throw error;
+      gcsFile = bucket.file(`resumes/${cleanName}`);
+      [fileBuffer] = await gcsFile.download();
+      [metadata] = await gcsFile.getMetadata();
+    }
     const customMeta = metadata.metadata || {};
 
     return {
