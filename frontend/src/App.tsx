@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ResumeManager } from './components/ResumeManager';
 import { BatchEmailWorkspace } from './components/BatchEmailWorkspace';
 import { JobApplicationWorkspace } from './components/JobApplicationWorkspace';
+import { PeopleLookup } from './components/PeopleLookup';
 import { fetchCurrentUser } from './api/currentUser';
 import { fetchResumes } from './api/resumes';
 import { fetchTemplates, fetchHealth } from './api/email';
@@ -140,7 +141,7 @@ export function App() {
         ) : (
           <>
             {workspace === 'job-applications' && <div className="mb-5 flex gap-2 border-b border-slate-200"><button type="button" onClick={() => setActiveTab('job')} className={`px-3 py-2 text-sm font-semibold ${activeTab === 'job' ? 'border-b-2 border-indigo-600 text-indigo-700' : 'text-slate-500'}`}>Job applications</button><button type="button" onClick={() => setActiveTab('quynh')} className={`px-3 py-2 text-sm font-semibold ${activeTab === 'quynh' ? 'border-b-2 border-indigo-600 text-indigo-700' : 'text-slate-500'}`}>Quynh’s outreach</button></div>}
-            {workspace === 'job-applications' && activeTab === 'job' ? <><div className="mb-5"><ResumeManager resumes={resumes} selectedResume={selectedResume} onSelectResume={setSelectedResume} onResumesUpdated={loadData} /></div><JobApplicationWorkspace resumes={resumes} selectedResume={selectedResume} onSelectResume={setSelectedResume} resumeManager={null} /></> : <><div className="flex items-end justify-between gap-4 mb-5">
+            {workspace === 'job-applications' && activeTab === 'job' ? <><div className="mb-5"><ResumeManager resumes={resumes} selectedResume={selectedResume} onSelectResume={setSelectedResume} onResumesUpdated={loadData} /></div><PeopleLookup /><div className="mt-5"><JobApplicationWorkspace resumes={resumes} selectedResume={selectedResume} onSelectResume={setSelectedResume} resumeManager={null} /></div></> : <><div className="flex items-end justify-between gap-4 mb-5">
               <div>
                 <p className="text-xs font-medium text-slate-500 mb-1">WORKSPACE</p>
                 <h2 className="text-lg font-semibold text-slate-900">Application drafts</h2>

@@ -12,6 +12,7 @@ import { googleConfigured } from './config/googleAuth.js';
 import { isGcpConfigured } from './config/gcpStorage.js';
 import internalRoutes from './routes/internalRoutes.js';
 import { initializeDatabase } from './config/database.js';
+import peopleRoutes from './routes/peopleRoutes.js';
 
 // Load environment variables from backend/.env or root .env
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -65,6 +66,7 @@ app.use('/api/resumes', resumeRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/internal', internalRoutes);
+app.use('/api/people', peopleRoutes);
 
 // Serve frontend static build in production (single web-service deployment)
 const frontendDistCandidates = [

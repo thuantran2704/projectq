@@ -41,5 +41,47 @@ export async function initializeDatabase(): Promise<void> {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       UNIQUE (source, source_job_id)
     );
+    CREATE TABLE IF NOT EXISTS people (
+      id BIGSERIAL PRIMARY KEY,
+      company TEXT NOT NULL,
+      name TEXT NOT NULL,
+      title TEXT,
+      profile_url TEXT,
+      professional_email TEXT,
+      email_verification_status TEXT NOT NULL DEFAULT 'UNKNOWN',
+      source TEXT NOT NULL DEFAULT 'MANUAL',
+      confidence_score NUMERIC(5,2) NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS people_company_email_idx
+      ON people (LOWER(company), LOWER(professional_email))
+      WHERE professional_email IS NOT NULL;
+    CREATE TABLE IF NOT EXISTS job_people (
+      id BIGSERIAL PRIMARY KEY,
+      job_id BIGINT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+      person_id BIGINT NOT NULL REFERENCES people(id) ON DELETE CASCADE,
+      relevance_score NUMERIC(5,2) NOT NULL DEFAULT 0,
+      ranking_reasons JSONB NOT NULL DEFAULT '[]'::jsonb,
+      status TEXT NOT NULL DEFAULT 'CANDIDATE',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (job_id, person_id)
+    );
+    CREATE TABLE IF NOT EXISTS outreach (
+      id BIGSERIAL PRIMARY KEY,
+      job_id BIGINT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+      person_id BIGINT NOT NULL REFERENCES people(id) ON DELETE CASCADE,
+      subject TEXT NOT NULL,
+      body TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'NEEDS_REVIEW',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      approved_at TIMESTAMPTZ,
+      sent_at TIMESTAMPTZ,
+      UNIQUE (job_id, person_id)
+    );
+    CREATE INDEX IF NOT EXISTS people_company_lookup_idx ON people (LOWER(company));
+    CREATE INDEX IF NOT EXISTS outreach_review_idx ON outreach (status, created_at);
   `);
 }
