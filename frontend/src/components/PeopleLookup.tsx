@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type Person = { id: string; name: string; title?: string; company: string; professional_email?: string; confidence_score: string };
 type Job = { id: string; company: string; title: string; job_url: string };
@@ -11,6 +11,9 @@ export function PeopleLookup() {
   const [error, setError] = useState('');
   const [candidate, setCandidate] = useState({ jobId: '', name: '', title: '', email: '' });
   const [message, setMessage] = useState('');
+  const [usage, setUsage] = useState<{ configured: boolean; searchesLeft?: number; monthlyLimit?: number; monthlyUsage?: number }>({ configured: false });
+
+  useEffect(() => { fetch('/api/people/usage').then((response) => response.json()).then(setUsage).catch(() => undefined); }, []);
 
   async function search(event: React.FormEvent) {
     event.preventDefault(); setLoading(true); setError(''); setMessage('');
@@ -23,7 +26,7 @@ export function PeopleLookup() {
     setMessage('Candidate added and draft placed in the review queue.'); setCandidate({ jobId: '', name: '', title: '', email: '' }); search({ preventDefault: () => undefined } as unknown as React.FormEvent);
   }
   return <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-    <h2 className="text-lg font-semibold text-slate-900">Relevant people lookup</h2>
+    <div className="flex items-center justify-between gap-3"><h2 className="text-lg font-semibold text-slate-900">Relevant people lookup</h2>{usage.configured && <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">SerpAPI: {usage.searchesLeft ?? '?'} searches left{usage.monthlyLimit ? ` of ${usage.monthlyLimit}` : ''}</span>}</div>
     <p className="mt-1 text-sm text-slate-500">Search public results by company for likely recruiters, hiring managers, and relevant engineers. You can also paste an email below, and the company is inferred from its domain.</p>
     <form onSubmit={search} className="mt-4 flex gap-2"><input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Tesla or tesla.com" className="flex-1 rounded border border-slate-300 px-3 py-2" required /><button className="rounded bg-indigo-600 px-4 py-2 text-white" disabled={loading}>{loading ? 'Searching...' : 'Search'}</button></form>
     {error && <p className="mt-3 text-sm text-red-600">{error}</p>}{message && <p className="mt-3 text-sm text-green-700">{message}</p>}

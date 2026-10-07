@@ -91,3 +91,13 @@ export async function reviewQueue(_req: Request, res: Response, next: NextFuncti
     res.json({ items: result.rows });
   } catch (error) { next(error); }
 }
+
+export async function serpApiUsage(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    if (!process.env.SERPAPI_API_KEY) { res.json({ configured: false }); return; }
+    const response = await fetch(`https://serpapi.com/account.json?api_key=${encodeURIComponent(process.env.SERPAPI_API_KEY)}`);
+    if (!response.ok) throw new AppError(`Usage provider returned HTTP ${response.status}.`, 502);
+    const data = await response.json() as Record<string, unknown>;
+    res.json({ configured: true, searchesLeft: data.total_searches_left ?? data.plan_searches_left, monthlyLimit: data.searches_per_month, monthlyUsage: data.this_month_usage, renewalDate: data.plan_renewal_date });
+  } catch (error) { next(error); }
+}
