@@ -83,5 +83,9 @@ export async function initializeDatabase(): Promise<void> {
     );
     CREATE INDEX IF NOT EXISTS people_company_lookup_idx ON people (LOWER(company));
     CREATE INDEX IF NOT EXISTS outreach_review_idx ON outreach (status, created_at);
+    CREATE TABLE IF NOT EXISTS people_searches (
+      company_key TEXT PRIMARY KEY,
+      searched_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
   `);
 }
