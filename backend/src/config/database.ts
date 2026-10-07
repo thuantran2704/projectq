@@ -17,6 +17,11 @@ export function getPool(): pg.Pool {
 
 export async function initializeDatabase(): Promise<void> {
   if (!process.env.DATABASE_URL) return;
+  if (process.env.NODE_ENV === 'production' && !process.env.RDS_CA_CERT) {
+    const response = await fetch('https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem');
+    if (!response.ok) throw new Error(`Could not download AWS RDS CA bundle: HTTP ${response.status}`);
+    process.env.RDS_CA_CERT = await response.text();
+  }
   await getPool().query(`
     CREATE TABLE IF NOT EXISTS jobs (
       id BIGSERIAL PRIMARY KEY,
