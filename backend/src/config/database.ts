@@ -8,7 +8,7 @@ export function getPool(): pg.Pool {
     if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not configured.');
     // Use the AWS RDS CA certificate so Render verifies the database identity.
     const connectionString = process.env.DATABASE_URL.replace(/([?&])sslmode=[^&]+&?/i, '$1').replace(/[?&]$/, '');
-    const ca = process.env.RDS_CA_CERT?.trim();
+    const ca = process.env.RDS_CA_CERT?.trim().replace(/^['"]|['"]$/g, '').replace(/\\n/g, '\n');
     if (process.env.NODE_ENV === 'production' && !ca) throw new Error('RDS_CA_CERT is required in production. Add the AWS RDS global CA certificate to Render.');
     pool = new Pool({ connectionString, ssl: process.env.NODE_ENV === 'production' ? { ca, rejectUnauthorized: true } : undefined, max: 5 });
   }
