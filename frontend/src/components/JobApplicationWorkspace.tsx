@@ -3,7 +3,7 @@ import { Check, FileText, Mail, Send, Sparkles } from 'lucide-react';
 import type { Resume } from '../types';
 import { sendHospitalEmail } from '../api/email';
 
-type Props = { resumes: Resume[]; selectedResume: Resume | null; onSelectResume: (resume: Resume | null) => void };
+type Props = { resumes: Resume[]; selectedResume: Resume | null; onSelectResume: (resume: Resume | null) => void; resumeManager?: React.ReactNode };
 const signature = `Thuan Tran\nSoftware Engineer Intern @ Tesla\nPreviously MLE Intern @ Microsoft\n\nLinkedIn: https://linkedin.com/in/thuantranusf\nGitHub: https://github.com/thuantran2704\nLeetCode: https://leetcode.com/u/thuantran274`;
 const backgrounds = { applied_ai: 'At Tesla, I work on parallel LLM execution and robotics simulation infrastructure. Previously at Microsoft Teams AI, I built production incident-intelligence and LLM evaluation systems that reduced noisy signals by 96% and incident response time by 56%.', systems_swe: 'At Tesla, I work on parallel runtimes, isolated execution, and Kubernetes-based robotics simulation infrastructure. Previously at Microsoft Teams AI, I built production telemetry and reliability systems that reduced incident response time by 56%.', mle: 'At Tesla, I work on LLM serving, agent tooling, and ML-assisted robotics simulation. Previously at Microsoft Teams AI, I built ML-based incident intelligence and LLM evaluation workflows, reducing noisy signals by 96%.' } as const;
 
