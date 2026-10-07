@@ -39,7 +39,21 @@ function draft(name: string, personTitle: string | null, job: { company: string;
 export async function lookupPeople(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const company = required(req.query.company, 'company');
-    const result = await getPool().query(`SELECT p.*, COUNT(jp.id)::int AS matched_jobs FROM people p LEFT JOIN job_people jp ON jp.person_id = p.id WHERE LOWER(p.company) LIKE LOWER($1) OR LOWER(p.professional_email) LIKE LOWER($2) GROUP BY p.id ORDER BY p.confidence_score DESC, p.name`, [`%${company}%`, `%@${company.toLowerCase().replace(/\s+/g, '')}%`]);
+    let result = await getPool().query(`SELECT p.*, COUNT(jp.id)::int AS matched_jobs FROM people p LEFT JOIN job_people jp ON jp.person_id = p.id WHERE LOWER(p.company) LIKE LOWER($1) OR LOWER(p.professional_email) LIKE LOWER($2) GROUP BY p.id ORDER BY p.confidence_score DESC, p.name`, [`%${company}%`, `%@${company.toLowerCase().replace(/\s+/g, '')}%`]);
+    if (process.env.SERPAPI_API_KEY) {
+      const query = `site:linkedin.com/in (${company}) (recruiter OR "hiring manager" OR engineer OR talent)`;
+      const response = await fetch(`https://serpapi.com/search.json?engine=google&hl=en&gl=us&num=20&q=${encodeURIComponent(query)}&api_key=${encodeURIComponent(process.env.SERPAPI_API_KEY)}`);
+      if (!response.ok) throw new AppError(`People search provider returned HTTP ${response.status}.`, 502);
+      const payload = await response.json() as { organic_results?: Array<{ title?: string; snippet?: string; link?: string }> };
+      for (const item of payload.organic_results || []) {
+        if (!item.title || !item.link) continue;
+        const name = item.title.split(' - ')[0].trim();
+        const title = item.title.split(' - ').slice(1).join(' - ').trim() || item.snippet?.slice(0, 300) || null;
+        const ranking = rank(title, company);
+        await getPool().query(`INSERT INTO people (company, name, title, profile_url, source, confidence_score) VALUES ($1,$2,$3,$4,'SERPAPI', $5) ON CONFLICT DO NOTHING`, [company, name, title, item.link, ranking.score]);
+      }
+      result = await getPool().query(`SELECT p.*, COUNT(jp.id)::int AS matched_jobs FROM people p LEFT JOIN job_people jp ON jp.person_id = p.id WHERE LOWER(p.company) LIKE LOWER($1) AND p.source='SERPAPI' GROUP BY p.id ORDER BY p.confidence_score DESC, p.name`, [`%${company}%`]);
+    }
     const jobs = await getPool().query('SELECT id, company, title, job_url, discovered_at FROM jobs WHERE LOWER(company) LIKE LOWER($1) ORDER BY discovered_at DESC LIMIT 50', [`%${company}%`]);
     res.json({ company, people: result.rows, jobs: jobs.rows });
   } catch (error) { next(error); }
