@@ -21,7 +21,7 @@ export async function getGoogleAccessToken(email?: string) {
     throw new Error('Unknown sender account. Configure QUYNH_EMAIL or THUAN_EMAIL.');
   }
   const refreshToken = normalizedEmail === quynhEmail
-    ? process.env.QUYNH_GOOGLE_REFRESH_TOKEN
+    ? process.env.GOOGLE_REFRESH_TOKEN
     : process.env.THUAN_GOOGLE_REFRESH_TOKEN;
   if (!refreshToken) throw new Error(`Gmail is not connected for ${normalizedEmail}. Set the account-specific refresh token.`);
   const response = await fetch(GOOGLE_TOKEN, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ client_id: process.env.GOOGLE_CLIENT_ID!, client_secret: process.env.GOOGLE_CLIENT_SECRET!, refresh_token: refreshToken, grant_type: 'refresh_token' }) });
