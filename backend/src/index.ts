@@ -97,10 +97,12 @@ if (frontendDistPath) {
 // Centralized error handling middleware
 app.use(errorHandler);
 
-initializeDatabase().then(() => app.listen(PORT, () => {
+initializeDatabase().catch((error) => {
+  console.error('Database initialization failed; starting in degraded mode:', error);
+}).finally(() => app.listen(PORT, () => {
   console.log(`=======================================================`);
   console.log(`ðŸ¥ Hospital Job Dispatcher Backend running on port ${PORT}`);
   console.log(`   API URL: http://localhost:${PORT}/api`);
   console.log(`   GCP Cloud Storage: ${isGcpConfigured() ? 'âœ… Configured' : 'âš ï¸ Local fallback active'}`);
   console.log(`=======================================================`);
-})).catch((error) => { console.error('Database initialization failed:', error); process.exit(1); });
+}));

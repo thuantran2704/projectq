@@ -15,10 +15,15 @@ export async function exchangeGoogleCode(code: string) {
 }
 export async function getGoogleAccessToken(email?: string) {
   const normalizedEmail = email?.toLowerCase();
-  const refreshToken = normalizedEmail === (process.env.QUYNH_EMAIL || 'nguyenquynh11102005@gmail.com').toLowerCase()
-    ? process.env.GOOGLE_REFRESH_TOKEN
-    : (process.env.THUAN_GOOGLE_REFRESH_TOKEN || process.env.GOOGLE_REFRESH_TOKEN);
-  if (!refreshToken) throw new Error('Connect Gmail first, then set GOOGLE_REFRESH_TOKEN on the backend.');
+  const quynhEmail = (process.env.QUYNH_EMAIL || 'nguyenquynh11102005@gmail.com').toLowerCase();
+  const thuanEmail = (process.env.THUAN_EMAIL || 'thuantran2704@gmail.com').toLowerCase();
+  if (!normalizedEmail || ![quynhEmail, thuanEmail].includes(normalizedEmail)) {
+    throw new Error('Unknown sender account. Configure QUYNH_EMAIL or THUAN_EMAIL.');
+  }
+  const refreshToken = normalizedEmail === quynhEmail
+    ? process.env.QUYNH_GOOGLE_REFRESH_TOKEN
+    : process.env.THUAN_GOOGLE_REFRESH_TOKEN;
+  if (!refreshToken) throw new Error(`Gmail is not connected for ${normalizedEmail}. Set the account-specific refresh token.`);
   const response = await fetch(GOOGLE_TOKEN, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ client_id: process.env.GOOGLE_CLIENT_ID!, client_secret: process.env.GOOGLE_CLIENT_SECRET!, refresh_token: refreshToken, grant_type: 'refresh_token' }) });
   const json = await response.json() as { access_token?: string; error?: string };
   if (!response.ok || !json.access_token) throw new Error(json.error || 'Could not refresh Google access token.');
