@@ -329,7 +329,7 @@ export const BatchEmailWorkspace: React.FC<BatchEmailWorkspaceProps> = ({
   const sendLove = async () => {
     setIsSendingLove(true); setLoveStatus(null);
     try {
-      const result = await sendHospitalEmail({ to: 'thuantran2704@gmail.com', subject: loveSubject, body: loveBody });
+      const result = await sendHospitalEmail({ to: 'thuantran2704@gmail.com', subject: loveSubject, body: loveBody, senderWorkspace: 'quynh' });
       setLoveStatus(result.message || 'Love sent through Gmail.');
     } catch (error) { setLoveStatus(error instanceof Error ? error.message : 'Love message failed to send.'); }
     finally { setIsSendingLove(false); }
