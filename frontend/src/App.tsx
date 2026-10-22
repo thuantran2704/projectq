@@ -55,6 +55,11 @@ export function App() {
     ? 'Find the right person, shape the message, and send with confidence.'
     : 'Build a thoughtful, personal application pipeline for nurse residency programs.';
 
+  const legalPath = window.location.pathname;
+  if (legalPath === '/privacy' || legalPath === '/terms') {
+    return <LegalPage type={legalPath === '/privacy' ? 'privacy' : 'terms'} />;
+  }
+
   if (loading) return <div className="app-loading"><div className="loading-mark"><Activity className="h-5 w-5" /></div><div><p>Opening ProjectQ</p><span>Syncing your workspace…</span></div></div>;
   if (loadError) return <div className="auth-screen"><div className="auth-card"><div className="brand-mark large"><Sparkles className="h-6 w-6" /></div><p className="eyebrow">PROJECTQ</p><h1>{loadError.includes('resumes') ? 'Sign in to continue' : 'We hit a small snag'}</h1><p>{loadError.includes('resumes') ? 'Use an approved Google account to open your resume library and outreach workspace.' : loadError}</p>{loadError.includes('resumes') && <a className="primary-button" href="/api/auth/google/start"><LogIn className="h-4 w-4" /> Sign in with Google</a>}<button className="quiet-button" type="button" onClick={() => void loadData()}>Retry connection</button></div></div>;
 
@@ -90,3 +95,41 @@ export function App() {
 }
 
 export default App;
+
+function LegalPage({ type }: { type: 'privacy' | 'terms' }) {
+  const isPrivacy = type === 'privacy';
+  return (
+    <div className="legal-page">
+      <header className="legal-header"><a href="/" className="legal-brand"><span className="brand-mark"><Sparkles className="h-4 w-4" /></span><span><strong>ProjectQ</strong><small>Career operations</small></span></a><a href="/" className="quiet-button">Back to ProjectQ</a></header>
+      <main className="legal-card">
+        <p className="eyebrow"><span className="eyebrow-dot" /> PROJECTQ</p>
+        <h1>{isPrivacy ? 'Privacy policy' : 'Terms of service'}</h1>
+        <p className="legal-updated">Effective date: October 21, 2026</p>
+        {isPrivacy ? <>
+          <p>ProjectQ is a private career-outreach workspace operated by Thuần Trần. This notice explains what information the service uses to provide its resume, job-search, and email features.</p>
+          <h2>Information we use</h2>
+          <ul><li>Your Google account email address, used to authenticate approved workspace users.</li><li>Gmail permission, used only to send messages from the Google account you select.</li><li>Resume files and related file metadata that you upload for use as email attachments.</li><li>Hospital, recruiter, and job-contact details that you enter or search for in the workspace.</li><li>Browser-saved draft recipient profiles and preferences used to keep your workspace available between visits.</li></ul>
+          <h2>How information is used</h2>
+          <p>ProjectQ uses this information to authenticate you, store and attach resumes, prepare outreach drafts, search for professional contacts, and send emails that you request. ProjectQ does not sell personal information or use your Gmail data for advertising.</p>
+          <h2>Google data</h2>
+          <p>When you connect Gmail, ProjectQ requests permission to send email. ProjectQ does not read your inbox or use Gmail content for advertising. You can revoke access at any time from your Google Account security settings.</p>
+          <h2>Storage and retention</h2>
+          <p>Uploaded resumes may be stored in configured cloud storage. Draft recipient information may be stored in your browser. You can remove uploaded resumes from the workspace, and you can request deletion of other stored information by contacting the address below.</p>
+          <h2>Contact</h2>
+          <p>For privacy questions or deletion requests, contact <a href="mailto:thuantran2704@gmail.com">thuantran2704@gmail.com</a>.</p>
+        </> : <>
+          <p>ProjectQ is a private career-outreach workspace operated by Thuần Trần. By using ProjectQ, you agree to use it responsibly and only with accounts and information you are authorized to use.</p>
+          <h2>Acceptable use</h2>
+          <ul><li>Use ProjectQ only for lawful career research and outreach.</li><li>Do not use the service to send spam, impersonate another person, or contact people without a legitimate professional purpose.</li><li>Keep your Google account and connected credentials secure.</li><li>Review recipients and message content before sending.</li></ul>
+          <h2>Email and third-party services</h2>
+          <p>ProjectQ uses Google APIs, cloud storage, and other configured services to provide its features. Email delivery depends on Google and recipient mail systems. ProjectQ cannot guarantee delivery, inbox placement, or uninterrupted availability.</p>
+          <h2>Your responsibility</h2>
+          <p>You are responsible for the files, recipients, and messages you enter or send. You should not upload files or send messages containing information you do not have permission to use.</p>
+          <h2>Changes and contact</h2>
+          <p>These terms may be updated as ProjectQ changes. Continued use after an update means you accept the revised terms. Questions can be sent to <a href="mailto:thuantran2704@gmail.com">thuantran2704@gmail.com</a>.</p>
+        </>}
+      </main>
+      <footer className="legal-footer">ProjectQ <span>/</span> Private career outreach workspace</footer>
+    </div>
+  );
+}
