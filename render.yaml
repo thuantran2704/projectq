@@ -31,3 +31,5 @@ services:
         value: Quynh Nguyen
       - key: SMTP_FROM_EMAIL
         value: nguyenquynh11102005@gmail.com
+      - key: GOOGLE_TOKEN_ENCRYPTION_KEY
+        sync: false

@@ -4,6 +4,7 @@ import { getResumeBuffer } from '../config/gcpStorage.js';
 import { HOSPITAL_EMAIL_TEMPLATES } from '../templates/hospitalTemplates.js';
 import { getGoogleAccessToken } from '../config/googleAuth.js';
 import { AppError } from '@projectq/middleware';
+import { authenticatedEmail } from '../middleware/allowedUser.js';
 
 export async function sendEmail(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -26,6 +27,9 @@ export async function sendEmail(req: Request, res: Response, next: NextFunction)
     const senderEmail = senderWorkspace === 'quynh'
       ? (process.env.QUYNH_EMAIL || 'nguyenquynh11102005@gmail.com')
       : (process.env.THUAN_EMAIL || 'thuantran2704@gmail.com');
+    if (authenticatedEmail(req) !== senderEmail.toLowerCase()) {
+      throw new AppError('Your Google login does not match the selected sender account.', 403);
+    }
     const result = await sendGmailEmail({ accessToken: await getGoogleAccessToken(senderEmail), senderEmail, to, cc, bcc, subject, body, resumeFilename, resumeOwner: senderWorkspace === 'quynh' ? 'quynh' : 'thuan' });
     res.json({ success: true, message: 'Email sent through Gmail API.', messageId: result.messageId, accepted: result.accepted, rejected: result.rejected, smtpResponse: result.response, sentWithResume: Boolean(resumeFilename), service: 'Gmail API' });
   } catch (error) {

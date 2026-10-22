@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { exchangeGoogleCode, googleAuthorizationUrl, googleConfigured } from '../config/googleAuth.js';
+import { exchangeGoogleCode, googleAuthorizationUrl, googleConfigured, saveGoogleConnection } from '../config/googleAuth.js';
 import { userCookie, requireAllowedUser } from '../middleware/allowedUser.js';
 
 const router = Router();
@@ -36,9 +36,8 @@ router.get('/google/callback', async (req, res) => {
     const allowed = (process.env.ALLOWED_USER_EMAIL || '').split(',').map((item) => item.trim().toLowerCase());
     if (!profile.email || !allowed.includes(profile.email.toLowerCase())) return res.status(403).send('This app is restricted to its authorized users.');
     res.setHeader('Set-Cookie', `projectq_allowed_user=${encodeURIComponent(userCookie(profile.email))}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=2592000`);
-    if (req.query.state !== 'connect') return res.redirect('/');
-    if (!tokens.refresh_token) return res.status(400).send('Google did not return a refresh token. Use the Connect Gmail link and approve access.');
-    res.type('html').send(`<h2>Gmail connected</h2><p>Copy this refresh token into <code>GOOGLE_REFRESH_TOKEN</code> on the backend.</p><textarea style="width:100%;height:100px">${tokens.refresh_token}</textarea>`);
+    if (tokens.refresh_token) await saveGoogleConnection(profile.email, tokens.refresh_token);
+    res.redirect('/');
   } catch (caught) {
     res.status(500).send(caught instanceof Error ? caught.message : 'Google authorization failed.');
   }

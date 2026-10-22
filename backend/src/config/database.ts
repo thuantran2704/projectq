@@ -87,5 +87,10 @@ export async function initializeDatabase(): Promise<void> {
       company_key TEXT PRIMARY KEY,
       searched_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+    CREATE TABLE IF NOT EXISTS google_connections (
+      email TEXT PRIMARY KEY,
+      encrypted_refresh_token TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
   `);
 }
